@@ -13,11 +13,16 @@ OrangePI IoT Edge device platform. In this case, [Orange Pi Zero2](http://www.or
   * [Additional preparation](#additional-preparation)
 - [Adding GPIO support](#adding-gpio-support)
   * [Manual build](#manual-build)
-    + [Prerequisites](#prerequisites)
+    + [Prerequisites](#gpio-prerequisites)
     + [Build and install](#build-and-install)
-    + [Usage](#usage)
+    + [Usage](#gpio-usage)
       - [General IO](#general-io)
+- [Adding I2C support](#adding-i2c-support)
+  * [Preparation](#i2c-preparation)
+- [Adding SPI support](#adding-spi-support)
+  * [Preparation](#spi-preparation)
 
+## Test SPI <a id='test-spi'></a>
 
 # OS Installation & Preparation  <a id='os-installation-preparation'></a>
 
@@ -132,7 +137,7 @@ Repository is cloned in `/opt` because it is reserved for the installation of ad
 
 
 
-### Prerequisites <a id='prerequisites'></a>
+### Prerequisites <a id='gpio-prerequisites'></a>
 To rebuild the bindings you must first have installed `swig`, `python3-dev`, and `python3-setuptools`. wiringOP should also be installed system-wide for access to the gpio tool:
 
 ```
@@ -165,6 +170,8 @@ We can look GPIO status with command `gpio readall`:
 
 It is possible to get help with all commands described with `gpio -h`.
 
+## Test GPIO <a id='test-gpio'></a>
+
 Test output (we want to turn on and off physical pin 7, which is wPi 2 – refer to `gpio_readall` or Orange Pi Zero2 user manual):
 ```
 gpio mode 2 out
@@ -176,7 +183,8 @@ gpio write 2 0
 gpio readall
 ```
 
-### Usage <a id='usage'></a>
+
+### Usage <a id='gpio-usage'></a>
 
 ```
 import wiringpi
@@ -197,3 +205,95 @@ wiringpi.digitalWrite(LED_PIN, 1)  # Write 0 ( LOW ) to pin LED_PIN
 out = wiringpi.digitalRead(LED_PIN)      # Read pin LED_PIN
 print(out)
 ```
+
+# Adding I2C support <a id='adding-i2c-support'></a>
+
+## Preparation <a id='i2c-preparation'></a>
+
+According to the schematic diagram of 26 pin, the I2C available for Orange Pi Zero 2 is `i2c3`, that is disabled by default and
+needs to be manually opened before it can be used.
+```
+sudo nano /boot/orangepiEnv.txt
+```
+
+Add following:
+```
+overlays=i2c3
+```
+
+After starting the linux system, first confirm that there is an `i2c3` device node under `/dev`: 
+```
+ls /dev/i2c-*
+```
+
+To use I2C from the command line, install the "i2c-tools" package using the following command:
+```
+sudo apt-get install i2c-tools
+```
+
+Detect I2C devices connected to the bus
+```
+sudo i2cdetect -y 3 # for I2C3
+```
+
+# Adding SPI support <a id='adding-spi-support'></a>
+
+
+
+## Preparation <a id='spi-preparation'></a>
+
+`spi1` is turned off by default and needs to be manually turned on to use it.
+```
+sudo nano /boot/orangepiEnv.txt
+```
+
+Add following:
+```
+overlays=spi-spidev
+param_spidev_spi_bus=1
+param_spidev_spi_cs=1
+```
+*If some parameter already exists, just add value with comma, eg.:
+```
+overlays=i2c3, spi-spidev
+```
+
+After starting the linux system, first confirm that there is an `spidev` device node under `/dev`: 
+```
+ls /dev/spidev1*
+```
+If it exists, it means that `spi` has been set and can be used directly.
+
+Compile the `spidev_test` test program in the examples of wiringOP:
+
+```
+make spidev_test
+```
+
+Do not short the `MOSI` and `MISO` pins of `spi1` first. The output result of running `spidev_test` is as follows:
+```
+sudo ./spidev_test -v -D /dev/spidev1.1
+```
+You can see that the data of TX and RX are inconsistent:
+```
+spi mode: 0x0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+TX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  |......@.........................|
+RX | FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF  |................................|
+```
+
+
+Then short the two pins of `spi1` `MOSI` (pin 19 in the 26pin interface) and `MISO` (pin 21 in the 26pin interface) and then run the output of `spidev_test` as follows. 
+```
+sudo ./spidev_test -v -D /dev/spidev1.1
+```
+You can see the sent and received the same data:
+```
+spi mode: 0x0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+TX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  |......@.........................|
+RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  |......@.........................|
+```
+
