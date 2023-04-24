@@ -119,7 +119,7 @@ Update `sudo apt-get update`.
 
 Upgrade `sudo apt-get upgrade`.
 
-Install git: `sudo apt-get upgrade`.
+Install git: `sudo apt install git`.
 
 
 # Adding GPIO support <a id='adding-gpio-support'></a>
