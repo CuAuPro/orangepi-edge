@@ -22,7 +22,6 @@ OrangePI IoT Edge device platform. In this case, [Orange Pi Zero2](http://www.or
 - [Adding SPI support](#adding-spi-support)
   * [Preparation](#spi-preparation)
 
-## Test SPI <a id='test-spi'></a>
 
 # OS Installation & Preparation  <a id='os-installation-preparation'></a>
 
