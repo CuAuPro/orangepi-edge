@@ -253,9 +253,9 @@ overlays=spi-spidev
 param_spidev_spi_bus=1
 param_spidev_spi_cs=1
 ```
-*If some parameter already exists, just add value with comma, eg.:
+*If some parameter already exists, just add value with space, eg.:
 ```
-overlays=i2c3, spi-spidev
+overlays=i2c3 spi-spidev
 ```
 
 After starting the linux system, first confirm that there is an `spidev` device node under `/dev`: 
