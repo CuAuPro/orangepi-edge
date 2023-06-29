@@ -21,7 +21,8 @@ OrangePI IoT Edge device platform. In this case, [Orange Pi Zero2](http://www.or
   * [Preparation](#i2c-preparation)
 - [Adding SPI support](#adding-spi-support)
   * [Preparation](#spi-preparation)
-
+- [Adding UART support](#adding-uart-support)
+  * [Preparation](#uart-preparation)
 
 # OS Installation & Preparation  <a id='os-installation-preparation'></a>
 
@@ -296,3 +297,43 @@ TX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF 
 RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  |......@.........................|
 ```
 
+# Adding UART support <a id='adding-uart-support'></a>
+
+
+
+## Preparation <a id='uart-preparation'></a>
+
+`uart5` (TX=8, RX=10) is turned off by default and needs to be manually turned on to use it.
+```
+sudo nano /boot/orangepiEnv.txt
+```
+
+Add following:
+```
+overlays=uart5
+```
+*If some parameter already exists, just add value with space, eg.:
+```
+overlays=i2c3 spi-spidev uart5
+```
+
+After starting the linux system, first confirm that there is an `uart5` device node under `/dev`: 
+```
+ls /dev/ttyS5
+```
+If it exists, it means that `uart5` has been set and can be used directly.
+
+To test `uart5`, short RX and TX, then use `gpio` command in wiringOP to test the loopback funciton of the serial port:
+
+```
+gpio serial /dev/ttyS5
+```
+
+You should see following output:
+
+```
+Out:   0:  ->   0
+Out:   1:  ->   1
+Out:   2:  ->   2
+Out:   3:  ->   3^C
+```
