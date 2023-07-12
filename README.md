@@ -49,7 +49,7 @@ Summarized workflow is:
 4. Turn on Power Supply. Wait for boot-up.
 
 
-## Setup SSH remote access <a id='setup-ssh-remote-access-pi'></a>
+## Setup SSH remote access <a id='setup-ssh-remote-access'></a>
 
 ### Setup static IP address (optional) <a id='setup-static-ip-address'></a>
 
@@ -120,6 +120,41 @@ Update `sudo apt-get update`.
 Upgrade `sudo apt-get upgrade`.
 
 Install git: `sudo apt install git`.
+
+### Sync clock
+
+Read status with `timedatectl status`:
+```
+orangepi@orangepizero2:~$ timedatectl status
+               Local time: Wed 2023-07-12 11:25:49 CEST
+           Universal time: Wed 2023-07-12 09:25:49 UTC
+                 RTC time: Fri 1970-01-02 00:07:11
+                Time zone: Europe/Ljubljana (CEST, +0200)
+System clock synchronized: no
+              NTP service: active
+          RTC in local TZ: no
+```
+You can also set TZ: `timedatectl set-timezone <timezone>`. Available timezones can be listed with `timedatectl list-timezones`.
+
+First install timesyncd with `sudo apt install systemd-timesyncd`, then set NTP servers in `/etc/systemd/timesyncd.conf`:
+```
+NTP=<IP_of_your_NTP_Server>
+```
+Restart service with `systemctl restart systemd-timesyncd` and finally set up NTP with `timedatectl set-ntp true`.
+
+Result:
+```
+orangepi@orangepizero2:~$ timedatectl status
+               Local time: Wed 2023-07-12 12:04:16 CEST
+           Universal time: Wed 2023-07-12 10:04:16 UTC
+                 RTC time: Fri 1970-01-02 00:10:59
+                Time zone: Europe/Ljubljana (CEST, +0200)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+```
+
+
 
 
 # Adding GPIO support <a id='adding-gpio-support'></a>
